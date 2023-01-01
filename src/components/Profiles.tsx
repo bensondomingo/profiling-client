@@ -11,7 +11,7 @@ import {
   Typography,
 } from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import { useQuery } from 'react-query'
+import { useMutation, useQuery, useQueryClient } from 'react-query'
 import { format, parseISO } from 'date-fns'
 
 import { Profile } from '../global/types'
@@ -64,7 +64,15 @@ const FIELD_TO_LABEL_MAPPING: { [key: string]: any } = {
 }
 
 export const Profiles = () => {
+  const queryClient = useQueryClient()
+
   const [profiles, setProfiles] = useState<Profile[]>([])
+  const deleteMutation = useMutation(
+    async (id: string) => await axiosClient.delete(`/profiles/${id}`),
+    {
+      onSuccess: () => queryClient.invalidateQueries('profiles'),
+    }
+  )
   const { isLoading, isError } = useQuery(
     'profiles',
     async () => await axiosClient.get('/profiles'),
@@ -79,7 +87,7 @@ export const Profiles = () => {
       {profiles.map((profile) => (
         <Accordion
           key={profile.id}
-          variant='outlined'
+          variant="outlined"
           sx={{
             marginBottom: '10px',
             borderRadius: '5px',
@@ -121,15 +129,21 @@ export const Profiles = () => {
                     textAlign="right"
                     sx={FIELD_TO_LABEL_MAPPING[key].sx}
                   >
-                    {value}
+                    {value || '-'}
                   </Typography>
                 </Box>
               )
             })}
           </AccordionDetails>
           <AccordionActions>
-            <Button variant='outlined'>Update</Button>
-            <Button variant='outlined' color='error'>Delete</Button>
+            <Button variant="outlined">Update</Button>
+            <Button
+              variant="outlined"
+              color="error"
+              onClick={() => deleteMutation.mutate(profile.id.toString())}
+            >
+              Delete
+            </Button>
           </AccordionActions>
         </Accordion>
       ))}
