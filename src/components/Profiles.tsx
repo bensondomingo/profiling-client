@@ -8,16 +8,18 @@ import {
   Box,
   Button,
   Container,
+  Fab,
   Typography,
 } from '@mui/material'
+import AddIcon from '@mui/icons-material/Add'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import { AxiosResponse } from 'axios'
 import { useMutation, useQuery, useQueryClient } from 'react-query'
 import { format, parseISO } from 'date-fns'
 
+import ProfileCreate from './ProfileCreate'
 import { Profile } from '../global/types'
-
 import { axiosClient } from '../config'
-import { AxiosResponse } from 'axios'
 
 function stringToColor(string: string) {
   let hash = 0
@@ -66,6 +68,7 @@ const FIELD_TO_LABEL_MAPPING: { [key: string]: any } = {
 export const Profiles = () => {
   const queryClient = useQueryClient()
 
+  const [viewAddProfileForm, setViewAddProfileForm] = useState(false)
   const [profiles, setProfiles] = useState<Profile[]>([])
   const deleteMutation = useMutation(
     async (id: string) => await axiosClient.delete(`/profiles/${id}`),
@@ -147,6 +150,17 @@ export const Profiles = () => {
           </AccordionActions>
         </Accordion>
       ))}
+      <Fab
+        color="primary"
+        sx={{ position: 'fixed', bottom: '5%', right: '5%' }}
+        onClick={() => setViewAddProfileForm(true)}
+      >
+        <AddIcon />
+      </Fab>
+      <ProfileCreate
+        isOpen={viewAddProfileForm}
+        onCloseHandler={() => setViewAddProfileForm(false)}
+      ></ProfileCreate>
     </Container>
   )
 }

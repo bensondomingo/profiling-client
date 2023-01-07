@@ -27,7 +27,9 @@ const App = () => {
       <Box sx={{ display: 'flex' }}>
         <TopBar onToggleSideNav={handleDrawerToggle} />
         <SideBar mobileOpen={mobileOpen} onClose={handleDrawerToggle} />
-        <div style={{ marginTop: '100px', width: '100%' }}>
+        <div
+          style={{ marginTop: '100px', marginBottom: '200px', width: '100%' }}
+        >
           <RouterProvider router={router} />
         </div>
       </Box>
