@@ -18,8 +18,10 @@ import { useMutation, useQuery, useQueryClient } from 'react-query'
 import { format, parseISO } from 'date-fns'
 
 import ProfileCreate from './ProfileCreate'
-import { Profile } from '../global/types'
+import { Address, ProfileRead } from '../global/types'
 import { axiosClient } from '../config'
+
+interface Profile extends ProfileRead {}
 
 function stringToColor(string: string) {
   let hash = 0
@@ -62,10 +64,30 @@ const FIELD_TO_LABEL_MAPPING: { [key: string]: any } = {
   },
   email: { label: 'email', fmt: null, sx: {} },
   created_at: { label: 'First attend', fmt: null, sx: {} },
-  address: { label: 'Address', fmt: null, sx: {} },
+  address: {
+    label: 'Address',
+    fmt: (address: Address | null) => {
+      const ordering = [
+        'unit_number',
+        'street',
+        'purok',
+        'brgy',
+        'municipality',
+        'province',
+      ]
+      if (!address) {
+        return null
+      }
+      return ordering
+        .map((key) => address[key])
+        .filter((value) => !!value)
+        .join(', ')
+    },
+    sx: {},
+  },
 }
 
-export const Profiles = () => {
+export const ProfileList = () => {
   const queryClient = useQueryClient()
 
   const [viewAddProfileForm, setViewAddProfileForm] = useState(false)

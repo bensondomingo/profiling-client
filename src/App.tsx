@@ -3,7 +3,7 @@ import { Box } from '@mui/material'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 
-import { Profiles } from './components/Profiles'
+import { ProfileList } from './components/ProfileList'
 import TopBar from './components/layout/TopBar'
 import SideBar from './components/layout/SideBar'
 
@@ -11,7 +11,7 @@ const queryClient = new QueryClient()
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <Profiles />,
+    element: <ProfileList />,
   },
 ])
 
