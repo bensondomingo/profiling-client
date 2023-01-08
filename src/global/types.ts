@@ -1,16 +1,32 @@
 type MaritalStatus = 'single' | 'married' | 'separated' | 'widowed'
 type Gender = 'male' | 'female'
 
-export interface Profile {
+export interface Address {
   [index: string]: any
-  id: number
+  street?: string | null
+  unit_number?: string | null
+  purok?: string | null
+  brgy?: string | null
+  municipality?: string | null
+  province?: string | null
+}
+
+export interface ProfileBase {
+  [index: string]: any
   first_name: string
   last_name: string
+  birth_date?: string
   email?: string
   contact_number?: string
-  address?: string
+  address?: Address
   marital_status?: MaritalStatus
   gender?: Gender
+}
+
+export interface ProfileAdd extends ProfileBase {}
+
+export interface ProfileRead extends ProfileBase {
+  id: number
   created_at: string
   updated_at: string
 }
