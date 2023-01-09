@@ -62,8 +62,12 @@ const FIELD_TO_LABEL_MAPPING: { [key: string]: any } = {
     fmt: null,
     sx: { textTransform: 'capitalize' },
   },
-  email: { label: 'email', fmt: null, sx: {} },
-  created_at: { label: 'First attend', fmt: null, sx: {} },
+  email: { label: 'Email', fmt: null, sx: {} },
+  created_at: {
+    label: 'First attend',
+    fmt: (value: string) => format(parseISO(value), 'MMM M, Y'),
+    sx: {},
+  },
   address: {
     label: 'Address',
     fmt: (address: Address | null) => {
