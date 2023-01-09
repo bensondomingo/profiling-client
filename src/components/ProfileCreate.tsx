@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Box,
   Button,
@@ -7,16 +7,45 @@ import {
   DialogContent,
   DialogTitle,
   FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
   TextField,
   Typography,
   useMediaQuery,
   useTheme,
 } from '@mui/material'
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
+import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { Controller, useForm } from 'react-hook-form'
+import { useMutation, useQuery, useQueryClient } from 'react-query'
+import { format } from 'date-fns'
 
-interface inputData {
-  firstName: string
-  // lastName: string
+import { ProfileBase } from '../global/types'
+import { axiosClient } from '../config'
+
+const DEFAULT_VALUES = {
+  first_name: '',
+  last_name: '',
+  birth_date: '',
+  marital_status: '',
+  gender: '',
+  email: '',
+  contact_number: '',
+  address: {
+    street: '',
+    unit_number: '',
+    purok: '',
+    brgy: '',
+    municipality: '',
+    province: '',
+  },
+}
+
+interface Profile extends Omit<ProfileBase, 'marital_status' | 'gender'> {
+  marital_status?: string
+  gender?: string
 }
 
 interface Props {
@@ -27,24 +56,18 @@ interface Props {
 const ProfileCreate = (props: Props) => {
   const theme = useTheme()
   const fullscreen = useMediaQuery(theme.breakpoints.down('md'))
-  const { handleSubmit, reset, control, setValue, getValues } = useForm({
-    defaultValues: {
-      firstName: '',
-      lastName: '',
-      birth_date: '',
-      marital_status: '',
-      gender: '',
-      email: '',
-      contact_number: '',
-      address: {
-        street: '',
-        unit_number: '',
-        purok: '',
-        brgy: '',
-        municipality: '',
-        province: '',
+  const queryClient = useQueryClient()
+  const createMutation = useMutation(
+    async (payload: Profile) => await axiosClient.post('/profiles', payload),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('profiles')
+        handleClose()
       },
-    },
+    }
+  )
+  const { handleSubmit, reset, control } = useForm<Profile, any>({
+    defaultValues: DEFAULT_VALUES,
   })
 
   const handleClose = () => {
@@ -52,8 +75,16 @@ const ProfileCreate = (props: Props) => {
     props.onCloseHandler()
   }
 
-  const handleSubmitForm = (data: inputData) => {
+  const handleSubmitForm = (data: Profile) => {
     console.log(data)
+    const payload: Profile = DEFAULT_VALUES
+    Object.keys(data).forEach((key) => {
+      let value = data[key] !== '' ? data[key] : null
+      if (value && key === 'birth_date')
+        value = data.birth_date?.$d?.toISOString()
+      payload[key] = value
+    })
+    createMutation.mutate(payload)
   }
 
   return (
@@ -72,7 +103,7 @@ const ProfileCreate = (props: Props) => {
         >
           <Typography>Basic Information</Typography>
           <Controller
-            name="firstName"
+            name="first_name"
             control={control}
             rules={{ required: 'First name is required' }}
             render={({ field, fieldState }) => (
@@ -88,7 +119,7 @@ const ProfileCreate = (props: Props) => {
             )}
           />
           <Controller
-            name="lastName"
+            name="last_name"
             control={control}
             rules={{ required: 'Last name is required' }}
             render={({ field, fieldState }) => (
@@ -106,15 +137,51 @@ const ProfileCreate = (props: Props) => {
           <Controller
             name="birth_date"
             control={control}
-            render={({ field, fieldState }) => (
+            render={({ field }) => (
               <FormControl fullWidth sx={{ marginY: '0.8rem' }}>
-                <TextField
-                  label="Birth Date"
-                  placeholder="Doe"
-                  error={!!fieldState.error}
-                  helperText={fieldState.error?.message}
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DatePicker
+                    label="Birth date"
+                    renderInput={(params) => (
+                      <TextField {...params} error={false} />
+                    )}
+                    {...field}
+                  />
+                </LocalizationProvider>
+              </FormControl>
+            )}
+          />
+          <Controller
+            name="gender"
+            control={control}
+            render={({ field }) => (
+              <FormControl fullWidth sx={{ marginY: '0.8rem' }}>
+                <InputLabel id="gender-input">Gender</InputLabel>
+                <Select id="gender-input" label="Gender" {...field}>
+                  <MenuItem value={'male'}>Male</MenuItem>
+                  <MenuItem value={'female'}>Female</MenuItem>
+                </Select>
+              </FormControl>
+            )}
+          />
+          <Controller
+            name="marital_status"
+            control={control}
+            render={({ field }) => (
+              <FormControl fullWidth sx={{ marginY: '0.8rem' }}>
+                <InputLabel id="marital-status-input">
+                  Marital status
+                </InputLabel>
+                <Select
+                  id="marital-status-input"
+                  label="Marital status"
                   {...field}
-                />
+                >
+                  <MenuItem value={'single'}>Single</MenuItem>
+                  <MenuItem value={'married'}>Married</MenuItem>
+                  <MenuItem value={'separated'}>Separated</MenuItem>
+                  <MenuItem value={'widowed'}>Widowed</MenuItem>
+                </Select>
               </FormControl>
             )}
           />
@@ -131,7 +198,7 @@ const ProfileCreate = (props: Props) => {
             render={({ field, fieldState }) => (
               <FormControl fullWidth sx={{ marginY: '0.8rem' }}>
                 <TextField
-                  label="Email address"
+                  label="Email Address"
                   placeholder="john.doe@email.com"
                   error={!!fieldState.error}
                   helperText={fieldState.error?.message}
@@ -156,7 +223,7 @@ const ProfileCreate = (props: Props) => {
             render={({ field, fieldState }) => (
               <FormControl fullWidth sx={{ marginY: '0.8rem' }}>
                 <TextField
-                  label="Contact number"
+                  label="Contact Number"
                   placeholder="09XXXXXXXXX"
                   error={!!fieldState.error}
                   helperText={
@@ -169,13 +236,13 @@ const ProfileCreate = (props: Props) => {
           />
           <Typography>Address</Typography>
           <Controller
-            name="address.street"
+            name="address.unit_number"
             control={control}
             render={({ field, fieldState }) => (
               <FormControl fullWidth sx={{ marginY: '0.8rem' }}>
                 <TextField
-                  label="Street"
-                  placeholder="123 Mockingbird Lane"
+                  label="Building number"
+                  placeholder="#46"
                   error={!!fieldState.error}
                   {...field}
                 />
@@ -183,13 +250,13 @@ const ProfileCreate = (props: Props) => {
             )}
           />
           <Controller
-            name="address.unit_number"
+            name="address.street"
             control={control}
             render={({ field, fieldState }) => (
               <FormControl fullWidth sx={{ marginY: '0.8rem' }}>
                 <TextField
-                  label="Unit #"
-                  placeholder="Unit #1"
+                  label="Street"
+                  placeholder="Rizal Avenue"
                   error={!!fieldState.error}
                   {...field}
                 />
