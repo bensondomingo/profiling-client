@@ -15,6 +15,7 @@ export interface ProfileBase {
   [index: string]: any
   first_name: string
   last_name: string
+  suffix?: string
   birth_date?: string
   email?: string
   contact_number?: string

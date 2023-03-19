@@ -55,6 +55,7 @@ function stringAvatar(name: string) {
 const FIELD_TO_LABEL_MAPPING: { [key: string]: any } = {
   first_name: { label: 'First name', fmt: null, sx: {} },
   last_name: { label: 'Last name', fmt: null, sx: {} },
+  suffix: { label: 'Suffix', fmt: null, sx: {} },
   gender: { label: 'Gender', fmt: null, sx: { textTransform: 'capitalize' } },
   contact_number: { label: 'Contact #', fmt: null, sx: {} },
   marital_status: {
@@ -129,7 +130,7 @@ export const ProfileList = () => {
               />
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <Typography>
-                  {profile.first_name} {profile.last_name}
+                  {profile.first_name} {profile.last_name} {profile.suffix}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
                   {format(parseISO(profile.created_at), 'MMM M, Y')}

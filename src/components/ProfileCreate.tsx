@@ -28,6 +28,7 @@ import { axiosClient } from '../config'
 const DEFAULT_VALUES = {
   first_name: '',
   last_name: '',
+  suffix: '',
   birth_date: '',
   marital_status: '',
   gender: '',
@@ -127,6 +128,21 @@ const ProfileCreate = (props: Props) => {
                 <TextField
                   label="Last name*"
                   placeholder="Doe"
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                  {...field}
+                />
+              </FormControl>
+            )}
+          />
+          <Controller
+            name="suffix"
+            control={control}
+            render={({ field, fieldState }) => (
+              <FormControl fullWidth sx={{ marginY: '0.8rem' }}>
+                <TextField
+                  label="Suffix"
+                  placeholder="Jr/Sr"
                   error={!!fieldState.error}
                   helperText={fieldState.error?.message}
                   {...field}
