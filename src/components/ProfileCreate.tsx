@@ -17,41 +17,23 @@ import {
 } from '@mui/material'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
-import { DatePicker } from '@mui/x-date-pickers/DatePicker'
-import { Controller, useForm } from 'react-hook-form'
+import { DatePicker, DatePickerProps } from '@mui/x-date-pickers/DatePicker'
+import { Controller, useForm, UseFormStateReturn } from 'react-hook-form'
 import { useMutation, useQuery, useQueryClient } from 'react-query'
 import { format } from 'date-fns'
 
 import { ProfileBase } from '../global/types'
 import { axiosClient } from '../config'
 
-const DEFAULT_VALUES = {
-  first_name: '',
-  last_name: '',
-  suffix: '',
-  birth_date: '',
-  marital_status: '',
-  gender: '',
-  email: '',
-  contact_number: '',
-  address: {
-    street: '',
-    unit_number: '',
-    purok: '',
-    brgy: '',
-    municipality: '',
-    province: '',
-  },
+interface Profile extends ProfileBase {
+  id?: number
 }
-
-interface Profile extends Omit<ProfileBase, 'marital_status' | 'gender'> {
-  marital_status?: string
-  gender?: string
+interface ProfileSubmit extends Omit<Profile, 'birth_date'> {
+  birth_date?: any
 }
-
 interface Props {
-  isOpen: boolean
   onCloseHandler: CallableFunction
+  initialData: Profile
 }
 
 const ProfileCreate = (props: Props) => {
@@ -67,8 +49,9 @@ const ProfileCreate = (props: Props) => {
       },
     }
   )
+
   const { handleSubmit, reset, control } = useForm<Profile, any>({
-    defaultValues: DEFAULT_VALUES,
+    defaultValues: props.initialData,
   })
 
   const handleClose = () => {
@@ -76,21 +59,21 @@ const ProfileCreate = (props: Props) => {
     props.onCloseHandler()
   }
 
-  const handleSubmitForm = (data: Profile) => {
-    console.log(data)
-    const payload: Profile = DEFAULT_VALUES
+  const handleSubmitForm = (data: ProfileSubmit) => {
+    const payload: Profile = props.initialData
     Object.keys(data).forEach((key) => {
       let value = data[key] !== '' ? data[key] : null
       if (value && key === 'birth_date')
         value = data.birth_date?.$d?.toISOString()
       payload[key] = value
     })
-    createMutation.mutate(payload)
+    console.log(payload)
+    // createMutation.mutate(payload)
   }
 
   return (
     <Dialog
-      open={props.isOpen}
+      open={true}
       onClose={handleClose}
       fullScreen={fullscreen}
       fullWidth={true}
@@ -100,7 +83,9 @@ const ProfileCreate = (props: Props) => {
         <Box
           id="form"
           component="form"
-          onSubmit={handleSubmit((data) => handleSubmitForm(data))}
+          onSubmit={handleSubmit((data: ProfileSubmit) =>
+            handleSubmitForm(data)
+          )}
         >
           <Typography>Basic Information</Typography>
           <Controller

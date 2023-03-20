@@ -1,5 +1,5 @@
-type MaritalStatus = 'single' | 'married' | 'separated' | 'widowed'
-type Gender = 'male' | 'female'
+export type MaritalStatus = 'single' | 'married' | 'separated' | 'widowed' | ''
+export type Gender = 'male' | 'female' | ''
 
 export interface Address {
   [index: string]: any

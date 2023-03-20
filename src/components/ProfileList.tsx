@@ -18,7 +18,7 @@ import { useMutation, useQuery, useQueryClient } from 'react-query'
 import { format, parseISO } from 'date-fns'
 
 import ProfileCreate from './ProfileCreate'
-import { Address, ProfileRead } from '../global/types'
+import { Address, Gender, MaritalStatus, ProfileRead } from '../global/types'
 import { axiosClient } from '../config'
 
 interface Profile extends ProfileRead {}
@@ -92,10 +92,37 @@ const FIELD_TO_LABEL_MAPPING: { [key: string]: any } = {
   },
 }
 
+const DEFAULT_MARITAL_STATUS: MaritalStatus = ''
+const DEFAULT_GENDER: Gender | null = ''
+
+const DEFAULT_VALUES = {
+  id: 10,
+  first_name: '',
+  last_name: '',
+  suffix: '',
+  birth_date: '',
+  marital_status: DEFAULT_MARITAL_STATUS,
+  gender: DEFAULT_GENDER,
+  email: '',
+  contact_number: '',
+  address: {
+    street: '',
+    unit_number: '',
+    purok: '',
+    brgy: '',
+    municipality: '',
+    province: '',
+  },
+  created_at: '',
+  updated_at: '',
+}
+
 export const ProfileList = () => {
   const queryClient = useQueryClient()
 
   const [viewAddProfileForm, setViewAddProfileForm] = useState(false)
+  const [formInitialValue, setFormInitialValue] =
+    useState<Profile>(DEFAULT_VALUES)
   const [profiles, setProfiles] = useState<Profile[]>([])
   const deleteMutation = useMutation(
     async (id: string) => await axiosClient.delete(`/profiles/${id}`),
@@ -166,7 +193,15 @@ export const ProfileList = () => {
             })}
           </AccordionDetails>
           <AccordionActions>
-            <Button variant="outlined">Update</Button>
+            <Button
+              variant="outlined"
+              onClick={() => {
+                setFormInitialValue(profile)
+                setViewAddProfileForm(true)
+              }}
+            >
+              Update
+            </Button>
             <Button
               variant="outlined"
               color="error"
@@ -184,10 +219,12 @@ export const ProfileList = () => {
       >
         <AddIcon />
       </Fab>
-      <ProfileCreate
-        isOpen={viewAddProfileForm}
-        onCloseHandler={() => setViewAddProfileForm(false)}
-      ></ProfileCreate>
+      {viewAddProfileForm && (
+        <ProfileCreate
+          onCloseHandler={() => setViewAddProfileForm(false)}
+          initialData={formInitialValue}
+        ></ProfileCreate>
+      )}
     </Container>
   )
 }
