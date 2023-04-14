@@ -96,7 +96,7 @@ const DEFAULT_MARITAL_STATUS: MaritalStatus = ''
 const DEFAULT_GENDER: Gender | null = ''
 
 const DEFAULT_VALUES = {
-  id: 10,
+  id: 0,
   first_name: '',
   last_name: '',
   suffix: '',
@@ -196,6 +196,10 @@ export const ProfileList = () => {
             <Button
               variant="outlined"
               onClick={() => {
+                const initialData = { ...profile }
+                Object.keys(initialData).forEach(
+                  (k) => (profile[k] = profile[k] || '')
+                )
                 setFormInitialValue(profile)
                 setViewAddProfileForm(true)
               }}

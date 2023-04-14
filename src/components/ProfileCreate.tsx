@@ -36,6 +36,11 @@ interface Props {
   initialData: Profile
 }
 
+interface UpdateMutationFnParam {
+  id: number
+  profile: Profile
+}
+
 const ProfileCreate = (props: Props) => {
   const theme = useTheme()
   const fullscreen = useMediaQuery(theme.breakpoints.down('md'))
@@ -50,6 +55,15 @@ const ProfileCreate = (props: Props) => {
     }
   )
 
+  const updateMutation = useMutation({
+    mutationFn: async (data: UpdateMutationFnParam) =>
+      await axiosClient.put(`/profiles/${data.id}`, data.profile),
+    onSuccess: () => {
+      queryClient.invalidateQueries('profiles')
+      handleClose()
+    },
+  })
+
   const { handleSubmit, reset, control } = useForm<Profile, any>({
     defaultValues: props.initialData,
   })
@@ -60,15 +74,19 @@ const ProfileCreate = (props: Props) => {
   }
 
   const handleSubmitForm = (data: ProfileSubmit) => {
-    const payload: Profile = props.initialData
     Object.keys(data).forEach((key) => {
       let value = data[key] !== '' ? data[key] : null
-      if (value && key === 'birth_date')
+      if (value && key in ['birth_date', 'first_attend'])
         value = data.birth_date?.$d?.toISOString()
-      payload[key] = value
+      data[key] = value
     })
-    console.log(payload)
-    // createMutation.mutate(payload)
+    console.log(data)
+    if (props.initialData.id && props.initialData.id > 0)
+      updateMutation.mutate({
+        id: props.initialData.id,
+        profile: data as Profile,
+      })
+    else createMutation.mutate(data as Profile)
   }
 
   return (
